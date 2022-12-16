@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Comment {
-  id        String   @id @default(dbgenerated())
+  id        Int   @id @default(autoincrement())
   user      String
   content   String
   createdAt DateTime @default(now())

@@ -11,29 +11,29 @@ const Home: NextPage = () => {
   const { data: sessionData } = useSession();
   const [input, setInput] = useState("");
   const [comments, setComments] = useState<Comment[] | null>(null);
-  const mutation = trpc.comment.create.useMutation()
   const query = trpc.comment.getAll.useQuery()
+  const mutation = trpc.comment.create.useMutation()
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setInput(value);
   };
 
-  const createComment = async () => {
-    await mutation.mutate({
+  const fetchComments = async () => {
+    const data = await query.data
+    if (!data) return
+    setComments(data)
+  }
+
+  const create = () => {
+    mutation.mutate({
       user: sessionData?.user?.name,
       content: input
     })
-    fetchComments();
+    fetchComments()
   };
 
-  const fetchComments = async () => {
-    const {data} = await query
-    if (!data) throw new Error('la data del query')
-    setComments(data)
-  };
-
-  useEffect(() => {
+  useEffect(()=> {
     fetchComments()
   }, [])
 
@@ -65,7 +65,7 @@ const Home: NextPage = () => {
               />
               {/* Submit comment */}
               <button
-                onClick={() => createComment()}
+                onClick={() => create()}
                 className="w-fit rounded-full bg-slate-900 px-6 py-3"
               >
                 Submit
@@ -86,11 +86,13 @@ const Home: NextPage = () => {
         </section>
 
         {/* Comments */}
-        {comments && comments.map(comment => (
-          <div key={comment.id}>
-            <h1 className="text-xl ">{comment.content}</h1>
-            <span>{comment.user}</span>
-            <span>{`${comment.createdAt}`}</span>
+        {comments && comments.reverse().map(comment => (
+          <div key={comment.id} className='bg-slate-900 rounded-xl px-6 py-2 w-full max-w-xl flex flex-col gap-5 mt-5'>
+            <h1 className="text-xl">{comment.content}</h1>
+            <div className="w-full flex justify-between">
+              <span className="text-slate-500">{comment.user}</span>
+              <span className="text-slate-500">{`${comment.createdAt.toLocaleDateString('en-US')}`}</span>
+            </div>
           </div>
         ))}
       </main>
